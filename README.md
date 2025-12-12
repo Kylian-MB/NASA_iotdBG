@@ -59,7 +59,7 @@ pip install -r requirements.txt
 
 Download
 - Windows executable (.exe):
-  - Latest build: https://github.com/Kylian-MB/iotdNASA/releases/latest/download/NASA-IOTD.exe
+  - Latest build: https://github.com/Kylian-MB/NASA_iotdBG/releases/latest/download/NASA-IOTD.exe
   - Note: Windows SmartScreen may warn about unsigned executables. Click "More info" > "Run anyway" if you trust this project.
 
 Virtual environment guide (Windows)
