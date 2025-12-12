@@ -1,0 +1,61 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write  # required for creating/updating GitHub Releases
+
+jobs:
+  build-windows:
+    name: Build NASA-IOTD.exe
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build executable with PyInstaller
+        run: |
+          pyinstaller --onefile --noconsole --name NASA-IOTD --icon icon/nasa_logo_icon.ico nasa_iotd.py
+
+      - name: Verify artifact exists
+        run: |
+          if (!(Test-Path -Path "dist/NASA-IOTD.exe")) { throw "Executable not found" }
+
+      - name: Compute SHA256
+        run: |
+          $h = Get-FileHash -Algorithm SHA256 dist/NASA-IOTD.exe | Select-Object -ExpandProperty Hash
+          Set-Content -Path dist/NASA-IOTD.sha256 -Value $h
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NASA-IOTD
+          path: |
+            dist/NASA-IOTD.exe
+            dist/NASA-IOTD.sha256
+
+      - name: Attach to GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/NASA-IOTD.exe
+            dist/NASA-IOTD.sha256
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
